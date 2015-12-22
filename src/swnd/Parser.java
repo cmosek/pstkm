@@ -10,9 +10,13 @@ import java.util.List;
 
 public class Parser {
 
+    private Graph graph;
+
+    Parser(int type){
+        graph = new Graph("data/v"+type);
+    }
 
     Integer[] compute(int a, int b, int c) {
-        Graph graph = new Graph("data/v4");
 
         YenTopKShortestPathsAlg yenAlg = new YenTopKShortestPathsAlg(graph);
         List<Path> shortest_paths_list = yenAlg.getShortestPaths(graph.getVertex(a), graph.getVertex(b), c);

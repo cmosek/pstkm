@@ -27,6 +27,9 @@ public class Parser {
 
 
         String path = shortest_paths_list.get(c - 1).getVertexList().toString();
+
+        System.out.println("From: "+ a + " To: "+ b+ "  - " + path);
+
         String[] tokens = path.split(":");
         String[] items = tokens[0].replaceAll("\\[", "").replaceAll("\\]", "").replaceAll(" ", "").split(",");
 
@@ -35,8 +38,8 @@ public class Parser {
         for (int i = 0; i < items.length; i++) {
             try {
                 results[i] = Integer.parseInt(items[i]);
-                System.out.print(results[i].toString());
-                System.out.println();
+                //System.out.print(results[i].toString());
+                //System.out.println();
             } catch (NumberFormatException nfe) {
                 System.err.println(nfe.toString());
             }

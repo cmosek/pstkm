@@ -6,23 +6,25 @@ import ilog.cplex.*;
 public class Model {
     //Wersja V4
 
-    int d_len = 6;
+
+    int d_len = 12;
     int v_len = 4;
     int p_len = 12;
 
+
     //Wersja V3
-    /*
+/*
     int d_len = 6;
     int v_len = 3;
     int p_len = 12;
+*/
 
-    */
         //Wersja V2
-    /*
+/*
         int v_len = 2;
         int d_len = 2;
         int p_len = 2;
-    */
+*/
 
     int version = 4;
 
@@ -70,18 +72,30 @@ public class Model {
 
 
             //System.out.println(delta_vdp[0]);
+            //Wersja z mnożeniem prezz delte_vdp
+            int[] ret = new int[p_len];
             for (Integer v : V) {
                 for (Integer d : D) {
 
-                    int[] ret = new int[p_len];
-                    for (int i = 0; i < ret.length; i++)
+
+                    for (int i = 0; i < p_len; i++)
                         ret[i] = delta_vdp[v - 1][d - 1][i];
 
-                    cplex.addLe(cplex.sumx_dp[d - 1], h_d);
-                    //cplex.addEq(cplex.scalProd(x_dp[d - 1], ret), h_d);
+
+
                 }
             }
 
+            for (int i = 1; i <= p_len; i++) {
+                cplex.addEq(cplex.scalProd(x_dp[i - 1], ret), h_d);
+            }
+            //Wersja bez mnożenia
+
+            /*
+            for (Integer d : D) {
+                cplex.addEq(cplex.sum(x_dp[d-1]), h_d);   // Moze trzeba bedzie to inaczej zapisac
+            }
+*/
 			/*
             // Ograniczenia
 
@@ -214,16 +228,11 @@ public class Model {
         for (Integer d : D) {
             for (Integer v : V) {
                 for (Path p : P) {
+                    delta_vdp[v - 1][d - 1][p.getNr() - 1] = 0;
                     if (p.checkInPath(v)) {
                         if (p.getD() == d) {
                             delta_vdp[v - 1][d - 1][p.getNr() - 1] = 1;
-                        } else {
-                            delta_vdp[v - 1][d - 1][p.getNr() - 1] = 0;
                         }
-
-
-                    } else {
-                        delta_vdp[v - 1][d - 1][p.getNr() - 1] = 0;
                     }
                 }
             }
@@ -238,22 +247,24 @@ public class Model {
             D[i] = i + 1;
         }
 
+
         if (version == 3) {
-
-
             //Wersja V3
-            P[0] = new Path(1, new Integer[]{1, 2});
-            P[1] = new Path(1, new Integer[]{1, 3, 2});
-            P[2] = new Path(2, new Integer[]{1, 3});
-            P[3] = new Path(2, new Integer[]{1, 2, 3});
-            P[4] = new Path(3, new Integer[]{2, 1});
-            P[5] = new Path(3, new Integer[]{2, 3, 1});
-            P[6] = new Path(4, new Integer[]{2, 3});
-            P[7] = new Path(4, new Integer[]{2, 1, 3});
-            P[8] = new Path(5, new Integer[]{3, 1});
-            P[9] = new Path(5, new Integer[]{3, 2, 1});
-            P[10] = new Path(6, new Integer[]{3, 2});
-            P[11] = new Path(6, new Integer[]{3, 1, 2});
+
+            Parser p = new Parser(version);
+
+            P[0] = new Path(1, p.compute(1, 2, 1));
+            P[1] = new Path(2, p.compute(2, 1, 1));
+            P[2] = new Path(3, p.compute(1, 3, 1));
+            P[3] = new Path(4, p.compute(3, 1, 1));
+            P[4] = new Path(5, p.compute(3, 2, 1));
+            P[5] = new Path(6, p.compute(2, 3, 1));
+            P[6] = new Path(1, p.compute(1, 2, 2));
+            P[7] = new Path(2, p.compute(2, 1, 2));
+            P[8] = new Path(3, p.compute(1, 3, 2));
+            P[9] = new Path(4, p.compute(3, 1, 2));
+            P[10] = new Path(5, p.compute(3, 2, 2));
+            P[11] = new Path(6, p.compute(2, 3, 2));
 
             T_v[0] = 80;
             T_v[1] = 100;
@@ -270,7 +281,7 @@ public class Model {
         if (version == 2) {
             //Wersja V2
 
-            Parser p = new Parser();
+            Parser p = new Parser(version);
 
             P[0] = new Path(1, p.compute(1, 2, 1));
             for (int i=0; i < P[0].V.length; i++) {
@@ -298,28 +309,42 @@ public class Model {
         }
 
         if (version == 4 ){
-            Parser p = new Parser();
-            /*
-            for (int k=0; k<p_len; k++){
-                for (int j=1; j<= v_len; j++){
-                    for (int i=0; i<=v_len; i++){
-                        P[k] = new Path(1, p.compute(, 2, 1));
-                    }
-                }
-            }
-            */
+            Parser p = new Parser(version);
+
+
             P[0] = new Path(1, p.compute(1, 2, 1));
-            P[1] = new Path(1, p.compute(1, 3, 1));
-            P[2] = new Path(2, p.compute(1, 4, 1));
-            P[3] = new Path(2, p.compute(2, 1, 1));
-            P[4] = new Path(3, p.compute(2, 4, 1));
-            P[5] = new Path(3, p.compute(3, 1, 1));
-            P[6] = new Path(4, p.compute(3, 4, 1));
-            P[7] = new Path(4, p.compute(4, 1, 1));
-            P[8] = new Path(5, p.compute(4, 2, 1));
-            P[9] = new Path(5, p.compute(4, 3, 1));
-            P[10] = new Path(6, p.compute(2, 3, 1));
-            P[11] = new Path(6, p.compute(3, 2, 1));
+            P[1] = new Path(2, p.compute(1, 3, 1));
+            P[2] = new Path(3, p.compute(1, 4, 1));
+
+            P[3] = new Path(4, p.compute(2, 1, 1));
+            P[4] = new Path(5, p.compute(2, 3, 1));
+            P[5] = new Path(6, p.compute(2, 4, 1));
+
+            P[6] = new Path(7, p.compute(3, 1, 1));
+            P[7] = new Path(8, p.compute(3, 2, 1));
+            P[8] = new Path(9, p.compute(3, 4, 1));
+
+            P[9] = new Path(10, p.compute(4, 1, 1));
+            P[10] = new Path(11, p.compute(4, 2, 1));
+            P[11] = new Path(12, p.compute(4, 3, 1));
+
+            /*
+            P[12] = new Path(1, p.compute(1, 2, 2));
+            P[13] = new Path(2, p.compute(1, 3, 2));
+            P[14] = new Path(3, p.compute(1, 4, 2));
+
+            P[15] = new Path(4, p.compute(2, 1, 2));
+            P[16] = new Path(5, p.compute(2, 3, 2));
+            P[17] = new Path(6, p.compute(2, 4, 2));
+
+            P[18] = new Path(7, p.compute(3, 1, 2));
+            P[19] = new Path(8, p.compute(3, 2, 2));
+            P[20] = new Path(9, p.compute(3, 4, 2));
+
+            P[21] = new Path(10, p.compute(4, 1, 2));
+            P[22] = new Path(11, p.compute(4, 2, 2));
+            P[23] = new Path(12, p.compute(4, 3, 2));
+*/
 /*
             for (int j=0; j< p_len; j++) {
                 for (int i = 0; i < P[1].getAllV().length; i++) {
